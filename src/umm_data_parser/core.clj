@@ -16,7 +16,7 @@
   (group-by #(select-keys % [:company :series]) data))
 
 (defn compact [[group & data]]
-  (let [joined (map #(select-keys % [:decided :event_duration]) (first data))]
+  (let [joined (map #(select-keys % [:status :decided :event_start :event_stop :event_duration :unit_names]) (first data))]
     [group joined]))
 
 (defn extract-data [groups]

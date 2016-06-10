@@ -8,7 +8,8 @@
     (let [csv (read-file)
           parsed (csv-map csv)
           grouped (create-groups parsed)
-          f (take 5 grouped)
-          p (extract-data f)]
-      (pp/pprint p)
-      (is (= p 1)))))
+          p (extract-data grouped)
+          fi (filter #(> (count (second %)) 3) p)
+          f (take 5 fi)]
+      (pp/pprint f)
+      (is (= 1 1)))))
