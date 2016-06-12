@@ -15,18 +15,23 @@
 
 (defn event-duration-to-hours [event_duration]
   (when-not (blank? event_duration)
-    (let [ groups (re-find (re-matcher #"(\d{1,}) .*, (\d{1,}).*" event_duration))
-           days (Integer. (second groups))
-           hours (Integer. (nth groups 2))]
-        (+ (* 24 days) hours))))
+    (if-let [ [_ days hours] (re-find (re-matcher #"(\d{1,}) .*, (\d{1,}).*" event_duration))]
+      (let [days (Integer. days)
+            hours (Integer. hours)]
+          (+ (* 24 days) hours))
+      nil)))
 
 (defn create-groups [data]
   (group-by #(select-keys % [:company :series]) data))
 
 (defn compact [[group & data]]
-  (let [joined (map #(select-keys % [:status :decided :event_start :event_stop :event_duration :unit_names]) (first data))
-        with-parsed-duration (map #(update-in % [:event_duration] event-duration-to-hours) joined)]
-    [group with-parsed-duration]))
+  (let [[current-message & rest] (first data)
+        get-duration-in-hours #(event-duration-to-hours (:event_duration %))
+        first-message (last rest)
+        first-message (assoc first-message :event_duration_num (get-duration-in-hours first-message))
+        first-message (assoc first-message :event_duration_num_last (get-duration-in-hours current-message))]
+        ;item (assoc first :last_event_duration (:event_duration current))]
+    [group first-message]))
 
 (defn extract-data [groups]
     (map compact groups))
@@ -36,5 +41,3 @@
   [& args]
   (let [file (read-file)
         mapped (csv-map file)]))
-
-(re-find (re-matcher #"(\d{1,}) .*, (\d{1,}).*" "1 day, 17:00:00"))

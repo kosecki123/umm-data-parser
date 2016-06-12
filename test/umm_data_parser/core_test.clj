@@ -18,7 +18,10 @@
   (testing "FIXME, I fail."
     (let [ event-duration "1 day, 7:00:00"
            event-duration-2 "2 days, 12:00:00"
+           event-duration-3 "broken"
            numeric (event-duration-to-hours event-duration)
-           numeric2 (event-duration-to-hours event-duration-2)]
+           numeric2 (event-duration-to-hours event-duration-2)
+           numeric3 (event-duration-to-hours event-duration-3)]
       (is (= numeric 31))
-      (is (= numeric2 60)))))
+      (is (= numeric2 60))
+      (is (= numeric3 nil)))))
