@@ -13,3 +13,12 @@
           f (take 5 fi)]
       (pp/pprint f)
       (is (= 1 1)))))
+
+(deftest event-duration-parsing-test
+  (testing "FIXME, I fail."
+    (let [ event-duration "1 day, 7:00:00"
+           event-duration-2 "2 days, 12:00:00"
+           numeric (event-duration-to-hours event-duration)
+           numeric2 (event-duration-to-hours event-duration-2)]
+      (is (= numeric 31))
+      (is (= numeric2 60)))))
