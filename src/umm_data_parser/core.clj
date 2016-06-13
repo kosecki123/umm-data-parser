@@ -3,6 +3,8 @@
   (:require [clojure.data.csv :as csv]
             [clojure.java.io :as io]
             [clojure.pprint :as p]
+            [clj-time.core :as tc]
+            [clj-time.format :as tf]
             [clojure.string :refer [blank?]]))
 
 (defn read-file []
@@ -22,21 +24,21 @@
 (defn csv-to-map [[head & lines]]
   (map #(zipmap (map keyword head) %1) lines))
 
-(defn event-duration-to-hours [event_duration]
-  (when-not (blank? event_duration)
-    (if-let [ [_ days hours] (re-find (re-matcher #"(\d{1,}) .*, (\d{1,}).*" event_duration))]
-      (let [days (Integer. days)
-            hours (Integer. hours)]
-          (+ (* 24 days) hours))
-      nil)))
+(defn event-duration-to-hours [{start :event_start end :event_stop}]
+  (when-not (and (blank? start) (blank? end))
+    (let [start (tf/parse start)
+          end (tf/parse end)]
+      (if (tc/before? start end)
+        (tc/in-hours (tc/interval start end))
+        (* -1 (tc/in-hours (tc/interval end start)))))))
 
 (defn create-groups [data]
   (group-by #(select-keys % [:company :series]) data))
 
 (defn assoc-durations [first-message last-message]
-  (let [get-duration-in-hours #(event-duration-to-hours (:event_duration %))
-        start-duration (get-duration-in-hours first-message)
-        end-duration (get-duration-in-hours last-message)]
+  (let [
+        start-duration (event-duration-to-hours first-message)
+        end-duration (event-duration-to-hours last-message)]
       (assoc first-message :event_duration_num start-duration :event_duration_num_last end-duration)))
 
 (defn compact [[group & data]]

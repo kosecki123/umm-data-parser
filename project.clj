@@ -6,7 +6,8 @@
   :dependencies [
                   [org.clojure/clojure "1.8.0"]
                   [org.clojure/data.csv "0.1.3"]
-                  [proto-repl "0.1.2"]]
+                  [proto-repl "0.1.2"]
+                  [clj-time "0.12.0"]]
   :main ^:skip-aot umm-data-parser.core
   :target-path "target/%s"
   :profiles {
