@@ -22,7 +22,7 @@
     (csv/write-csv file (map-to-csv header rows))))
 
 (defn csv-to-map [[head & lines]]
-  (map #(zipmap (map keyword head) %1) lines))
+  (pmap #(zipmap (map keyword head) %1) lines))
 
 (defn event-duration-to-hours [{start :event_start end :event_stop}]
   (when-not (or (blank? start) (blank? end))
@@ -49,9 +49,12 @@
 (defn -main
   "I don't do a whole lot ... yet."
   [& args]
-  (let [raw (read-file)
-        mapped (csv-to-map raw)
-        grouped (create-groups mapped)
-        compacted (map compact grouped)
-        head (conj (first raw) "event_duration_num" "event_duration_num_last")]
-      (write-file head compacted)))
+  (time
+    (let [raw (read-file)
+          mapped (csv-to-map raw)
+          grouped (create-groups mapped)
+          compacted (pmap compact grouped)
+          head (conj (first raw) "event_duration_num" "event_duration_num_last")]
+        (println "Processed " (count compacted) " rows")
+        (write-file head compacted)
+        (shutdown-agents))))
