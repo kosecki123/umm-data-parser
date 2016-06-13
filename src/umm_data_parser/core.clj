@@ -10,7 +10,16 @@
     (doall
       (csv/read-csv in-file))))
 
-(defn csv-map [[head & lines]]
+(defn map-to-csv [header rows]
+  (let [columns (map keyword header)
+        rows (mapv #(mapv % columns) rows)]
+    (cons header rows)))
+
+(defn write-file [header rows]
+  (with-open [file (io/writer "resources/umm-processed.csv")]
+    (csv/write-csv file (map-to-csv header rows))))
+
+(defn csv-to-map [[head & lines]]
   (map #(zipmap (map keyword head) %1) lines))
 
 (defn event-duration-to-hours [event_duration]
@@ -24,20 +33,25 @@
 (defn create-groups [data]
   (group-by #(select-keys % [:company :series]) data))
 
-(defn compact [[group & data]]
-  (let [[current-message & rest] (first data)
-        get-duration-in-hours #(event-duration-to-hours (:event_duration %))
-        first-message (last rest)
-        first-message (assoc first-message :event_duration_num (get-duration-in-hours first-message))
-        first-message (assoc first-message :event_duration_num_last (get-duration-in-hours current-message))]
-        ;item (assoc first :last_event_duration (:event_duration current))]
-    [group first-message]))
+(defn assoc-durations [first-message last-message]
+  (let [get-duration-in-hours #(event-duration-to-hours (:event_duration %))
+        start-duration (get-duration-in-hours first-message)
+        end-duration (get-duration-in-hours last-message)]
+      (assoc first-message :event_duration_num start-duration :event_duration_num_last end-duration)))
 
-(defn extract-data [groups]
-    (map compact groups))
+(defn compact [[group & data]]
+  (let [ get-duration-in-hours #(event-duration-to-hours (:event_duration %))
+         [last-message & rest] (first data)]
+    (if-not (empty? rest)
+            (assoc-durations (last rest) last-message)
+            (assoc-durations last-message last-message))))
 
 (defn -main
   "I don't do a whole lot ... yet."
   [& args]
-  (let [file (read-file)
-        mapped (csv-map file)]))
+  (let [raw (read-file)
+        mapped (csv-to-map raw)
+        grouped (create-groups mapped)
+        compacted (map compact grouped)
+        head (conj (first raw) "event_duration_num" "event_duration_num_last")]
+      (write-file head compacted)))
