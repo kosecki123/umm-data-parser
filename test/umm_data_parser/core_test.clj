@@ -19,3 +19,10 @@
            end "2015-07-17 16:00:00"
            result (event-duration-to-hours {:event_start start :event_stop end})]
       (is (= result 32)))))
+
+(deftest event-duration-parsing-test
+  (testing "FIXME, I fail."
+    (let [ start "2015-07-16 08:00:00"
+           end ""
+           result (event-duration-to-hours {:event_start start :event_stop end})]
+      (is (= result 32)))))

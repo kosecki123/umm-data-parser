@@ -25,12 +25,11 @@
   (map #(zipmap (map keyword head) %1) lines))
 
 (defn event-duration-to-hours [{start :event_start end :event_stop}]
-  (when-not (and (blank? start) (blank? end))
+  (when-not (or (blank? start) (blank? end))
     (let [start (tf/parse start)
           end (tf/parse end)]
-      (if (tc/before? start end)
-        (tc/in-hours (tc/interval start end))
-        (* -1 (tc/in-hours (tc/interval end start)))))))
+      (when (tc/before? start end)
+        (tc/in-hours (tc/interval start end))))))
 
 (defn create-groups [data]
   (group-by #(select-keys % [:company :series]) data))
