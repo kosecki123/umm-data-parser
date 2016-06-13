@@ -40,8 +40,7 @@
       (assoc first-message :event_duration_num start-duration :event_duration_num_last end-duration)))
 
 (defn compact [[group & data]]
-  (let [ get-duration-in-hours #(event-duration-to-hours (:event_duration %))
-         [last-message & rest] (first data)]
+  (let [ [last-message & rest] (first data)]
     (if-not (empty? rest)
             (assoc-durations (last rest) last-message)
             (assoc-durations last-message last-message))))
