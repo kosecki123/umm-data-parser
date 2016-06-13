@@ -7,7 +7,8 @@
                   [org.clojure/clojure "1.8.0"]
                   [org.clojure/data.csv "0.1.3"]
                   [proto-repl "0.1.2"]
-                  [clj-time "0.12.0"]]
+                  [clj-time "0.12.0"]
+                  [incanter "1.5.7"]]
   :main ^:skip-aot umm-data-parser.core
   :target-path "target/%s"
   :profiles {
