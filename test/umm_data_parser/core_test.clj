@@ -26,5 +26,3 @@
            end ""
            result (event-duration-to-hours {:event_start start :event_stop end})]
       (is (= result 32)))))
-
-(flatten [[1 2 3] [4 5 6]])

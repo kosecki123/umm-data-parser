@@ -44,7 +44,7 @@
   (let [ data (reverse (first data))
          first-message (first data)]
     (if (> (count data) 1)
-        (map-indexed #(assoc-durations first-message %2 (inc %1)) (rest data))
+        (mapv assoc-durations data (rest data) (iterate inc 1))
         (assoc-durations first-message first-message 0))))
 
 (defn -main
