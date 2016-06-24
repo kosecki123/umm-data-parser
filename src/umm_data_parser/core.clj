@@ -34,19 +34,18 @@
 (defn create-groups [data]
   (group-by #(select-keys % [:company :series]) data))
 
-(defn assoc-durations [first-message last-message reestimation-count]
+(defn assoc-durations [first-message last-message reestimation-nr]
   (let [
         start-duration (event-duration-to-hours first-message)
         end-duration (event-duration-to-hours last-message)]
-      (assoc first-message :event_duration_num start-duration :event_duration_num_last end-duration :reestimation_count reestimation-count)))
+      (assoc first-message :event_duration_num start-duration :event_duration_num_last end-duration :reestimation_nr reestimation-nr)))
 
 (defn compact [[group & data]]
-  (let [ data (first data)
-         [last-message & rest] data
-         reestimation-count (count data)]
-    (if-not (empty? rest)
-            (assoc-durations (last rest) last-message reestimation-count)
-            (assoc-durations last-message last-message reestimation-count))))
+  (let [ data (reverse (first data))
+         first-message (first data)]
+    (if (> (count data) 1)
+        (map-indexed #(assoc-durations first-message %2 (inc %1)) (rest data))
+        (assoc-durations first-message first-message 0))))
 
 (defn -main
   "I don't do a whole lot ... yet."
@@ -55,8 +54,8 @@
     (let [raw (read-file)
           mapped (csv-to-map raw)
           grouped (create-groups mapped)
-          compacted (pmap compact grouped)
-          head (conj (first raw) "event_duration_num" "event_duration_num_last" "reestimation_count")]
+          compacted (flatten (pmap compact grouped))
+          head (conj (first raw) "event_duration_num" "event_duration_num_last" "reestimation_nr")]
         (println "Processed " (count compacted) " rows")
         (write-file head compacted)
         (shutdown-agents))))

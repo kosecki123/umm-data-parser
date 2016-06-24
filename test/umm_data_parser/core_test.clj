@@ -8,7 +8,7 @@
     (let [csv (read-file)
           parsed (csv-to-map csv)
           grouped (create-groups parsed)
-          mapped (map compact grouped)
+          mapped (flatten (map compact grouped))
           f (take 5 mapped)]
       (pp/pprint f)
       (is (= 1 1)))))
@@ -26,3 +26,5 @@
            end ""
            result (event-duration-to-hours {:event_start start :event_stop end})]
       (is (= result 32)))))
+
+(flatten [[1 2 3] [4 5 6]])
